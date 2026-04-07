@@ -461,7 +461,7 @@ FULL OUTER JOIN orders o
 
 
 -- =========================================
--- 20. JOIN: КАК ДУМАТЬ
+-- 20. JOIN
 -- =========================================
 
 -- FROM = основная таблица
@@ -806,46 +806,210 @@ FROM customers;
 
 
 -- =========================================
--- 33. WINDOW FUNCTIONS (БАЗА)
+-- 33. WINDOW FUNCTIONS
 -- =========================================
 
--- window functions не схлопывают строки,
--- в отличие от GROUP BY
+-- Оконные функции не схлопывают строки,
+-- а добавляют вычисленное значение к каждой строке
+-- Всегда используются с OVER()
 
--- нумерация строк
-SELECT
-  customer_id,
-  price,
-  ROW_NUMBER() OVER (ORDER BY price DESC) AS rn
-FROM orders;
+-- =========================================
+-- СИНТАКСИС
+-- =========================================
 
--- ранг с пропусками
-SELECT
-  customer_id,
-  price,
-  RANK() OVER (ORDER BY price DESC) AS price_rank
-FROM orders;
+-- function() OVER (
+--   PARTITION BY ...
+--   ORDER BY ...
+--   ROWS BETWEEN ...
+-- )
 
--- общая сумма по всем строкам
+-- =========================================
+-- 1. АГРЕГАТНЫЕ ОКОННЫЕ ФУНКЦИИ
+-- =========================================
+
+-- SUM — сумма по окну
 SELECT
   customer_id,
   price,
   SUM(price) OVER () AS total_sum
 FROM orders;
 
--- нумерация внутри группы
+-- AVG — среднее значение
 SELECT
   customer_id,
   price,
-  ROW_NUMBER() OVER (
-    PARTITION BY customer_id
-    ORDER BY price DESC
-  ) AS rn
+  AVG(price) OVER (PARTITION BY customer_id) AS avg_price
 FROM orders;
+
+-- COUNT — количество строк
+SELECT
+  customer_id,
+  COUNT(*) OVER (PARTITION BY customer_id) AS orders_count
+FROM orders;
+
+-- MIN / MAX — минимум / максимум
+SELECT
+  price,
+  MIN(price) OVER () AS min_price,
+  MAX(price) OVER () AS max_price
+FROM orders;
+
+-- =========================================
+-- 2. ФУНКЦИИ РАНЖИРОВАНИЯ
+-- =========================================
+
+-- ROW_NUMBER — уникальный номер строки
+SELECT
+  customer_id,
+  price,
+  ROW_NUMBER() OVER (ORDER BY price DESC) AS rn
+FROM orders;
+
+-- RANK — ранг с пропусками (1,1,3)
+SELECT
+  price,
+  RANK() OVER (ORDER BY price DESC) AS rank
+FROM orders;
+
+-- DENSE_RANK — ранг без пропусков (1,1,2)
+SELECT
+  price,
+  DENSE_RANK() OVER (ORDER BY price DESC) AS rank
+FROM orders;
+
+-- NTILE — деление на группы
+SELECT
+  price,
+  NTILE(4) OVER (ORDER BY price) AS bucket
+FROM orders;
+
+-- =========================================
+-- 3. ФУНКЦИИ СМЕЩЕНИЯ
+-- =========================================
+
+-- LAG — предыдущее значение
+SELECT
+  date,
+  price,
+  LAG(price) OVER (ORDER BY date) AS prev_price
+FROM orders;
+
+-- LEAD — следующее значение
+SELECT
+  date,
+  price,
+  LEAD(price) OVER (ORDER BY date) AS next_price
+FROM orders;
+
+-- FIRST_VALUE — первое значение в окне
+SELECT
+  price,
+  FIRST_VALUE(price) OVER (ORDER BY price) AS first_price
+FROM orders;
+
+-- LAST_VALUE — последнее значение в окне (важно указать границы)
+SELECT
+  price,
+  LAST_VALUE(price) OVER (
+    ORDER BY price
+    ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+  ) AS last_price
+FROM orders;
+
+-- =========================================
+-- 4. СТАТИСТИЧЕСКИЕ ФУНКЦИИ
+-- =========================================
+
+-- PERCENT_RANK — относительный ранг (0–1)
+SELECT
+  price,
+  PERCENT_RANK() OVER (ORDER BY price) AS percent_rank
+FROM orders;
+
+-- CUME_DIST — доля строк <= текущей
+SELECT
+  price,
+  CUME_DIST() OVER (ORDER BY price) AS cume_dist
+FROM orders;
+
+-- =========================================
+-- 5. НАСТРОЙКА ОКНА
+-- =========================================
+
+-- PARTITION BY — деление на группы
+SELECT
+  customer_id,
+  price,
+  SUM(price) OVER (PARTITION BY customer_id) AS total_by_customer
+FROM orders;
+
+-- ORDER BY — порядок строк
+SELECT
+  date,
+  price,
+  SUM(price) OVER (ORDER BY date) AS running_total
+FROM orders;
+
+-- ROWS BETWEEN — границы окна
+
+-- накопительная сумма
+SELECT
+  date,
+  price,
+  SUM(price) OVER (
+    ORDER BY date
+    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+  ) AS running_total
+FROM orders;
+
+-- только предыдущая строка + текущая
+-- ROWS BETWEEN 1 PRECEDING AND CURRENT ROW
+
+-- вся таблица
+-- ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+
+-- =========================================
+-- ЧАСТЫЕ ПАТТЕРНЫ
+-- =========================================
+
+-- ТОП-1 в группе
+SELECT *
+FROM (
+  SELECT *,
+    ROW_NUMBER() OVER (
+      PARTITION BY customer_id
+      ORDER BY price DESC
+    ) AS rn
+  FROM orders
+) t
+WHERE rn = 1;
+
+-- разница с предыдущим значением
+SELECT
+  date,
+  price,
+  price - LAG(price) OVER (ORDER BY date) AS diff
+FROM orders;
+
+-- накопительная сумма (короткий вариант)
+SELECT
+  date,
+  price,
+  SUM(price) OVER (ORDER BY date) AS running_total
+FROM orders;
+
+-- =========================================
+-- ИТОГ
+-- =========================================
+
+-- OVER() — включает оконную функцию
+-- PARTITION BY — делит на группы
+-- ORDER BY — задаёт порядок
+-- ROWS BETWEEN — задаёт границы окна
 
 
 -- =========================================
--- 34. МИНИ-ПРИМЕРЫ: ОТ ПРОСТОГО К СЛОЖНОМУ
+-- 34. МИНИ-ПРИМЕРЫ
 -- =========================================
 
 -- 1. Просто выбрать нужные столбцы
