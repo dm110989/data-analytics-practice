@@ -275,26 +275,25 @@ plt.hist(data, bins=10, color="blue", alpha=0.7)
 ## Общие параметры графиков
 
 ```python
-plt.title("Заголовок")  — заголовок
-plt.xlabel("X")         — подписи осей
-plt.ylabel("Y")         — подписи осей
-plt.legend()            — легенда (нужен label в plot)
-plt.grid()              — сетка
-plt.tight_layout()      — авто-отступы (чтобы ничего не налезало) 
+plt.figure(figsize=(10, 6))   # размер графика (ширина, высота) в дюймах
+
+plt.plot(x, y, label="Линия") # label нужен для легенды
+
+plt.title("Заголовок")        # заголовок графика
+plt.suptitle("Общий заголовок")  # общий заголовок для нескольких графиков (figure)
+
+plt.xlabel("X")               # подпись оси X
+plt.ylabel("Y")               # подпись оси Y
+
+plt.xlim(0, 10)               # границы оси X
+plt.ylim(0, 100)              # границы оси Y
+
+plt.xticks(rotation=45, ha='right')  # поворот и выравнивание подписей по оси X
+
+plt.legend()                  # легенда (нужен label в plot)
+plt.grid()                    # сетка
+plt.tight_layout()            # авто-отступы, чтобы ничего не налезало
+ 
 ```  
 
 ---
-
-### Полезно
-
-```python
-plt.suptitle("Общий заголовок")
-plt.xlim(0, 10) 
-plt.ylim(0, 100)
-plt.xticks(rotation=45)
-📐 plt.figure() — размер графика
-plt.figure(figsize=(10, 6)) - figsize — размер (ширина, высота),измеряется в дюймах 
-
-- suptitle — общий заголовок  
-- xlim / ylim — границы  
-- xticks — поворот подписей  

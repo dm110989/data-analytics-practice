@@ -64,6 +64,43 @@ countplot → считает количество
 
 ---
 
+# 📈 sns.lineplot() — линия / тренд
+
+```python
+sns.lineplot(
+    data=df,
+    x="bill_length_mm",
+    y="flipper_length_mm"
+)
+```
+
+### Основные параметры:
+
+- x, y — данные
+- hue — разделение по категориям
+- style — стиль линий
+- markers=True — показать точки
+- dashes=False — сплошные линии
+
+Пример:
+
+```python
+sns.lineplot(
+    data=df,
+    x="bill_length_mm",
+    y="flipper_length_mm",
+    hue="species",
+    markers=True
+)
+```
+
+👉 показывает изменение / тренд  
+👉 часто используется для временных рядов
+
+⚠️ lineplot по умолчанию агрегирует значения по x  
+(обычно среднее)
+
+---
 ### **📉 sns.displot() — распределение**
 
 ```python
