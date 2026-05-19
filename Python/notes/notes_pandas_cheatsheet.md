@@ -52,6 +52,542 @@ df.iloc[0]  # строка по позиции
 
 ---
 
+# 🗺️ pandas .map()
+
+`.map()` — замена / преобразование значений в Series
+
+```python
+df['col'].map(...)
+```
+
+👉 работает только с одной колонкой (`Series`)
+
+---
+
+# 🔄 Замена значений через словарь
+
+```python
+df['sex'].map({
+    'M': 'Male',
+    'F': 'Female'
+})
+```
+
+### Было:
+
+```text
+M
+F
+M
+```
+
+### Стало:
+
+```text
+Male
+Female
+Male
+```
+
+👉 самый частый сценарий использования
+
+---
+
+# 🔢 Преобразование чисел
+
+```python
+df['price'].map(lambda x: x * 100)
+```
+
+### Было:
+
+```text
+0.15
+0.30
+```
+
+### Стало:
+
+```text
+15
+30
+```
+
+👉 применяет функцию к каждому элементу
+
+---
+
+# 🔤 Изменение текста
+
+```python
+df['name'].map(lambda x: x.upper())
+```
+
+### Было:
+
+```text
+ivan
+anna
+```
+
+### Стало:
+
+```text
+IVAN
+ANNA
+```
+
+---
+
+# 📏 Категоризация значений
+
+```python
+df['age'].map(
+    lambda x: 'adult' if x >= 18 else 'child'
+)
+```
+
+### Было:
+
+```text
+10
+25
+17
+```
+
+### Стало:
+
+```text
+child
+adult
+child
+```
+
+---
+
+# ❓ Работа с NaN
+
+```python
+df['sex'].map({
+    'M': 'Male',
+    'F': 'Female'
+})
+```
+
+⚠️ Если значения нет в словаре → будет `NaN`
+
+### Пример:
+
+```text
+M → Male
+X → NaN
+```
+
+---
+
+# ✅ Как избежать NaN
+
+## fillna()
+
+```python
+df['sex'].map({
+    'M': 'Male',
+    'F': 'Female'
+}).fillna('Unknown')
+```
+
+---
+
+# 🔄 map() vs replace()
+
+| Метод | Особенность |
+|---|---|
+| map() | только Series |
+| replace() | Series и DataFrame |
+| map() | отсутствующие значения → NaN |
+| replace() | не найденные значения остаются как есть |
+
+---
+
+# 📌 map() + lambda
+
+```python
+df['salary'].map(lambda x: x / 1000)
+```
+
+👉 удобно для быстрых преобразований
+
+---
+
+# ⚠️ map() работает только с Series
+
+```python
+df['col'].map(...)
+```
+
+❌ нельзя:
+
+```python
+df.map(...)
+```
+
+---
+
+# 💡 Часто используется для:
+
+- переименования категорий
+- преобразования значений
+- создания признаков
+- бинаризации
+- быстрых функций через lambda
+
+---
+
+# 🚀 Самые частые варианты
+
+```python
+.map({'A': 1, 'B': 2})
+
+.map(lambda x: x.upper())
+
+.map(lambda x: x * 100)
+
+.map(str)
+```
+
+---
+
+# 🔤 Строковые методы pandas (.str)
+
+`.str` — доступ к строковым методам Series
+
+```python
+df['col'].str.method()
+```
+
+👉 работает только со строками (`object` / `string`)
+
+---
+
+# 🔠 Изменение регистра
+
+## lower()
+
+```python
+df['name'].str.lower()
+```
+
+```text
+IVAN → ivan
+```
+
+👉 нижний регистр
+
+---
+
+## upper()
+
+```python
+df['name'].str.upper()
+```
+
+```text
+ivan → IVAN
+```
+
+👉 ВЕРХНИЙ РЕГИСТР
+
+---
+
+## title()
+
+```python
+df['name'].str.title()
+```
+
+```text
+ivan petrov → Ivan Petrov
+```
+
+👉 Каждое Слово С Большой Буквы
+
+---
+
+# ✂️ Удаление символов
+
+## strip()
+
+```python
+df['name'].str.strip()
+```
+
+```text
+'  ivan  ' → 'ivan'
+```
+
+👉 убрать пробелы по краям
+
+---
+
+## lstrip()
+
+```python
+df['name'].str.lstrip()
+```
+
+```text
+'   ivan' → 'ivan'
+```
+
+👉 убрать пробелы слева
+
+---
+
+## rstrip()
+
+```python
+df['name'].str.rstrip()
+```
+
+```text
+'ivan   ' → 'ivan'
+```
+
+👉 убрать пробелы справа
+
+---
+
+# 🔍 Поиск
+
+## contains()
+
+```python
+df['email'].str.contains('gmail')
+```
+
+```text
+ivan@gmail.com → True
+test@yandex.ru → False
+```
+
+👉 содержит ли строка текст
+
+---
+
+## startswith()
+
+```python
+df['email'].str.startswith('admin')
+```
+
+```text
+admin@gmail.com → True
+user@gmail.com → False
+```
+
+👉 начинается ли строка
+
+---
+
+## endswith()
+
+```python
+df['file'].str.endswith('.csv')
+```
+
+```text
+data.csv → True
+image.png → False
+```
+
+👉 заканчивается ли строка
+
+---
+
+# 🔄 Замена
+
+## replace()
+
+```python
+df['phone'].str.replace('-', '')
+```
+
+```text
++7-999-123 → +7999123
+```
+
+👉 замена текста
+
+---
+
+# ✂️ Разделение строки
+
+## split()
+
+```python
+df['email'].str.split('@')
+```
+
+```text
+ivan@gmail.com → ['ivan', 'gmail.com']
+```
+
+👉 разбить строку
+
+---
+
+## split(..., expand=True)
+
+```python
+df['email'].str.split('@', expand=True)
+```
+
+```text
+0       1
+ivan   gmail.com
+```
+
+👉 сразу разбивает на колонки
+
+---
+
+# 📌 Извлечение
+
+## extract()
+
+```python
+df['email'].str.extract(r'@([\w.]+)')
+```
+
+```text
+ivan@gmail.com → gmail.com
+```
+
+👉 извлечь часть строки через regex
+
+---
+
+# 🔢 Длина строки
+
+## len()
+
+```python
+df['name'].str.len()
+```
+
+```text
+ivan → 4
+```
+
+👉 длина строки
+
+---
+
+# 🔤 Получение символов
+
+## slice()
+
+```python
+df['name'].str.slice(0, 3)
+```
+
+```text
+ivan → iva
+```
+
+👉 символы с 0 по 3
+
+---
+
+## [ ]
+
+```python
+df['name'].str[0]
+```
+
+```text
+ivan → i
+```
+
+👉 первый символ
+
+---
+
+# ❓ Проверки
+
+## isdigit()
+
+```python
+df['col'].str.isdigit()
+```
+
+```text
+123 → True
+12a → False
+```
+
+👉 только цифры
+
+---
+
+## isalpha()
+
+```python
+df['col'].str.isalpha()
+```
+
+```text
+ivan → True
+ivan123 → False
+```
+
+👉 только буквы
+
+---
+
+## isalnum()
+
+```python
+df['col'].str.isalnum()
+```
+
+```text
+ivan123 → True
+ivan_123 → False
+```
+
+👉 буквы + цифры
+
+---
+
+# 🧹 Работа с NaN
+
+## contains(..., na=False)
+
+```python
+df['email'].str.contains('gmail', na=False)
+```
+
+👉 NaN не вызовет ошибку
+
+---
+
+# 💡 Часто используемые
+
+```python
+.str.lower()
+.str.strip()
+.str.contains()
+.str.replace()
+.str.split()
+.str.extract()
+.str.len()
+```
+
+👉 база для очистки текстовых данных
+
+---
+
 ## Фильтрация
 
 ```python

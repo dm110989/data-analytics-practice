@@ -216,3 +216,22 @@ sns.displot(
 - pairplot → всё сразу  
 - hue → цвет по категории  
 - col → разбивка на графики  
+
+---
+
+### Пример
+
+fig, axes = plt.subplots(3, 1, figsize=(20, 20))
+
+sns.lineplot(data=df_report_by_date, x='date', y='orders', ax=axes[0],marker='o')
+sns.lineplot(data=df_report_by_date, x='date', y='revenue_date', ax=axes[1],marker='o')
+sns.lineplot(data=df_report_by_date, x='date', y='avg_revenue_date', ax=axes[2],marker='o')
+
+axes[0].set_title('Заказы\n')
+axes[1].set_title('Выручка за день\n')
+axes[2].set_title('Средний чек за день\n')
+for ax in axes:
+    ax.tick_params(axis='x', rotation=45)
+    ax.set_xlabel(ax.get_xlabel(), ha='right')
+
+plt.tight_layout()
