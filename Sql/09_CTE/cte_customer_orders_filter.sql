@@ -1,50 +1,46 @@
--- Тема: CTE + агрегаты + фильтрация по бизнес-условиям
--- Уровень: Medium
---
--- Задача:
--- Найти пользователей из Санкт-Петербурга и Москвы,
--- зарегистрированных после 1 марта 2024 года,
--- у которых:
---   1) более 5 доставленных заказов
---   2) средний чек (по заказам) > 20000
---
--- Вывести информацию о пользователях и их метрики
+-- =============================================================
+-- ТЕМА: CTE (Common Table Expressions) — WITH
+-- =============================================================
 
+
+-- -------------------------------------------------------------
+-- Задача 1 | Уровень: Сложный | Тема: CTE, JOIN, агрегаты, фильтрация
+--
+-- Найти клиентов из Москвы и Санкт-Петербурга,
+-- зарегистрированных после 1 марта 2024 года,
+-- у которых: > 5 доставленных заказов И средний чек > 20 000 руб.
+--
+-- Поля: customer_id, customer_city, created_at,
+--        total_orders, avg_order_price
+-- Сортировка: по убыванию total_orders
+-- -------------------------------------------------------------
+
+-- Шаг 1: считаем агрегаты только по доставленным заказам
 WITH delivered_orders AS (
-    -- Считаем агрегаты по доставленным заказам для каждого пользователя
     SELECT
-        o.customer_id,                                  -- id пользователя
-        COUNT(DISTINCT o.order_id) AS total_orders,     -- количество доставленных заказов
-        SUM(oi.price) AS total_price,                   -- суммарная стоимость всех заказов
-        SUM(oi.price)::numeric / COUNT(DISTINCT o.order_id) AS avg_order_price  -- средний чек
+        o.customer_id,
+        COUNT(DISTINCT o.order_id)                              AS total_orders,
+        SUM(oi.price)                                           AS total_price,
+        -- средний чек: total / кол-во заказов
+        -- ::numeric нужен чтобы результат был дробным, а не целым
+        SUM(oi.price)::NUMERIC / COUNT(DISTINCT o.order_id)    AS avg_order_price
     FROM orders o
-    -- Подтягиваем стоимость заказов (разбивка по позициям)
-    LEFT JOIN order_items oi
-        ON o.order_id = oi.order_id
-    -- Учитываем только доставленные заказы
+    LEFT JOIN order_items oi ON o.order_id = oi.order_id
     WHERE o.order_status = 'Delivered'
-    -- Группировка по пользователю
     GROUP BY o.customer_id
 )
 
+-- Шаг 2: фильтруем клиентов по условиям задачи
 SELECT
-    c.customer_id,         -- id пользователя
-    c.customer_city,       -- город
-    c.created_at,          -- дата регистрации
-    d.total_orders,        -- количество заказов
-    d.avg_order_price      -- средний чек
+    c.customer_id,
+    c.customer_city,
+    c.created_at,
+    d.total_orders,
+    d.avg_order_price
 FROM customers c
--- Соединяем пользователей с их агрегированными заказами
-INNER JOIN delivered_orders d
-    ON c.customer_id = d.customer_id
-WHERE
-    -- Фильтр по городам
-    c.customer_city IN ('Санкт-Петербург', 'Москва')
-    -- Фильтр по количеству заказов
-    AND d.total_orders > 5
-    -- Фильтр по среднему чеку
-    AND d.avg_order_price > 20000
-    -- Фильтр по дате регистрации
-    AND c.created_at > '2024-03-01'
--- Сортировка по количеству заказов (по убыванию)
+INNER JOIN delivered_orders d ON c.customer_id = d.customer_id
+WHERE c.customer_city IN ('Санкт-Петербург', 'Москва')
+  AND d.total_orders     > 5
+  AND d.avg_order_price  > 20000
+  AND c.created_at       > '2024-03-01'
 ORDER BY d.total_orders DESC;
